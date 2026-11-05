@@ -1,3 +1,4 @@
+import 'package:e301_cinemapedia/presentation/providers/movies/initial_loading_provider.dart';
 import 'package:e301_cinemapedia/presentation/providers/movies/movies_provider.dart';
 import 'package:e301_cinemapedia/presentation/providers/movies/movies_slideshow_provider.dart';
 import 'package:e301_cinemapedia/presentation/widgets/widgets.dart';
@@ -31,23 +32,34 @@ class _HomeViewState extends ConsumerState<_HomeView> {
     super.initState();
 
     ref.read(nowPlayingMoviesProvider.notifier).loadNextPage();
+    ref.read(popularMoviesProvider.notifier).loadNextPage();
+    ref.read(topRatedMoviesProvider.notifier).loadNextPage();
+    ref.read(upcomingMoviesProvider.notifier).loadNextPage();
   }
 
   @override
   Widget build(BuildContext context) {
+    final initialLoading = ref.watch(initialLoadingProvider);
+
+    if(initialLoading){
+      return FullScreenLoader();
+    }
+
     final nowPlayingMovies = ref.watch(nowPlayingMoviesProvider);
+    final popularMovies = ref.watch(popularMoviesProvider);
+    final topRatedMovies = ref.watch(topRatedMoviesProvider);
+    final upcomingMovies = ref.watch(upcomingMoviesProvider);
     final slideShowMovies = ref.watch(moviesSlideshowProvider);
 
     return CustomScrollView(
       slivers: [
         SliverAppBar(
           floating: true,
-          flexibleSpace: FlexibleSpaceBar(
-            title: CustomAppbar(),
-          ),
+          flexibleSpace: FlexibleSpaceBar(title: CustomAppbar()),
           expandedHeight: 130,
         ),
-          SliverList(delegate: SliverChildBuilderDelegate((context,index){
+        SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
             return Column(
               children: [
                 //CustomAppbar(),
@@ -61,34 +73,33 @@ class _HomeViewState extends ConsumerState<_HomeView> {
                   },
                 ),
                 MovieHorizontalListview(
-                  movies: nowPlayingMovies,
+                  movies: upcomingMovies,
                   title: 'Proximamente',
                   subtitle: 'En este mes',
                   loadNextPage: () {
-                    ref.read(nowPlayingMoviesProvider.notifier).loadNextPage();
+                    ref.read(upcomingMoviesProvider.notifier).loadNextPage();
                   },
                 ),
                 MovieHorizontalListview(
-                  movies: nowPlayingMovies,
+                  movies: popularMovies,
                   title: 'Populares',
                   //subtitle: 'Viernes 23',
                   loadNextPage: () {
-                    ref.read(nowPlayingMoviesProvider.notifier).loadNextPage();
+                    ref.read(popularMoviesProvider.notifier).loadNextPage();
                   },
                 ),
                 MovieHorizontalListview(
-                  movies: nowPlayingMovies,
+                  movies: topRatedMovies,
                   title: 'Mejor Calificadas',
                   subtitle: 'Desde Siempre',
                   loadNextPage: () {
-                    ref.read(nowPlayingMoviesProvider.notifier).loadNextPage();
+                    ref.read(topRatedMoviesProvider.notifier).loadNextPage();
                   },
                 ),
               ],
             );
-          },
-          childCount: 1,
-        )),
+          }, childCount: 1),
+        ),
       ],
     );
   }
